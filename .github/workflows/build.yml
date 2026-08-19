@@ -1,0 +1,47 @@
+name: Build APK
+
+# Runs automatically on every push to main, and can also be re-run on demand
+# from the Actions tab ("Run workflow" button) without a new commit.
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # Installs the Android SDK cmdline-tools and pre-accepts the SDK
+      # licenses on the runner. The specific platform (API 36) and
+      # build-tools versions this project needs are then auto-downloaded by
+      # the Android Gradle Plugin itself during the build below -- GitHub's
+      # runners have normal, unrestricted internet access to Google's
+      # servers, unlike the sandbox this project was originally written in.
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      # No Gradle wrapper is checked into this repo (the jar can't be
+      # fetched from a sandboxed environment either), so this installs
+      # Gradle itself on the runner instead of relying on ./gradlew.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10'
+
+      - name: Build debug APK
+        run: gradle assembleDebug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FloatWM-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
