@@ -1,0 +1,8 @@
+<resources>
+    <color name="bubble_bg">#F2222222</color>
+    <color name="bubble_stroke">#55FFFFFF</color>
+    <color name="window_bg">#EE1B1B1B</color>
+    <color name="window_stroke">#33FFFFFF</color>
+    <color name="titlebar_bg">#F02D2D2D</color>
+    <color name="text_primary">#FFFFFFFF</color>
+</resources>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- "Display over other apps" -- not auto-grantable; MainActivity sends
+         the user to Settings.ACTION_MANAGE_OVERLAY_PERMISSION for it. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <!-- Runtime permission (Android 13+) for the required foreground-service
+         notification. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Scoped package visibility (API 30+): this is the sanctioned,
+         non-QUERY_ALL_PACKAGES way to enumerate "every launcher-visible app",
+         which is exactly what a launcher-style picker is allowed to declare. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
+    <application
+        android:name=".FloatApplication"
+        android:allowBackup="false"
+        android:icon="@drawable/ic_apps"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.FloatWM"
+        android:supportsRtl="true">
+
+        <!-- Never shows real UI (see Theme.FloatWM.Transparent). Its only
+             job is the permission handshake, then it starts OverlayService
+             and finishes itself -- see the "no full-screen UI" requirement. -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.FloatWM.Transparent">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".OverlayService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="User-requested persistent floating bubble and floating-window multitasking overlay." />
+        </service>
+
+    </application>
+</manifest>

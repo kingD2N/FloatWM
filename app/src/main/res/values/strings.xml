@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">FloatWM</string>
+    <string name="picker_title">Apps</string>
+    <string name="minimize_desc">Minimize</string>
+    <string name="close_desc">Close</string>
+    <string name="resize_desc">Resize</string>
+    <string name="bubble_icon_desc">App bubble</string>
+
+    <string name="notif_channel_name">Floating windows</string>
+    <string name="notif_title">FloatWM is running</string>
+    <string name="notif_text">Tap the bubble to open your apps. Tap here to stop.</string>
+
+    <string name="overlay_permission_rationale">FloatWM needs the \"Display over other apps\" permission to show its bubble and floating windows.</string>
+    <string name="overlay_permission_denied">Permission not granted \u2014 tap the FloatWM icon again when you\'re ready to allow it.</string>
+
+    <string name="freeform_notice">Opened in a freeform window \u2014 use its own title bar to move, resize, minimize, or close it.</string>
+</resources>
