@@ -1,7 +1,7 @@
 <resources>
     <style name="Theme.FloatWM" parent="Theme.MaterialComponents.DayNight.NoActionBar" />
 
-    <!-- Used only by MainActivity, which never shows real content -- this is
+    <!-- Used only by MainActivity, which never shows real content; this is
          what makes "no full-screen UI" literally true rather than just a
          zero-content screen. -->
     <style name="Theme.FloatWM.Transparent" parent="Theme.FloatWM">

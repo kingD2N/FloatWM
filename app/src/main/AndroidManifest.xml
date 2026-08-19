@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- "Display over other apps" -- not auto-grantable; MainActivity sends
+    <!-- "Display over other apps" is not auto-grantable; MainActivity sends
          the user to Settings.ACTION_MANAGE_OVERLAY_PERMISSION for it. -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
@@ -32,7 +32,7 @@
 
         <!-- Never shows real UI (see Theme.FloatWM.Transparent). Its only
              job is the permission handshake, then it starts OverlayService
-             and finishes itself -- see the "no full-screen UI" requirement. -->
+             and finishes itself; see the "no full-screen UI" requirement. -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
