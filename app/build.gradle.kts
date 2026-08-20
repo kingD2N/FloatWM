@@ -27,9 +27,31 @@ android {
         versionName = "1.0"
     }
 
+    // Reads from environment variables rather than a checked-in
+    // keystore.properties, so nothing secret ever touches the repo. Locally
+    // these env vars just won't be set, so a plain `gradle assembleRelease`
+    // on your own machine produces an UNSIGNED release APK (that's normal
+    // AGP behavior, not a bug here) -- only CI, via the four
+    // FLOATWM_RELEASE_* secrets in release.yml, actually signs it. See
+    // README "Release signing" section.
+    val releaseKeystorePath = System.getenv("FLOATWM_RELEASE_KEYSTORE_PATH")
+    signingConfigs {
+        if (releaseKeystorePath != null) {
+            create("release") {
+                storeFile = file(releaseKeystorePath)
+                storePassword = System.getenv("FLOATWM_RELEASE_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("FLOATWM_RELEASE_KEY_ALIAS")
+                keyPassword = System.getenv("FLOATWM_RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (releaseKeystorePath != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
