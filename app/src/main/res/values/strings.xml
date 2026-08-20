@@ -14,4 +14,6 @@
     <string name="overlay_permission_denied">Permission not granted \u2014 tap the FloatWM icon again when you\'re ready to allow it.</string>
 
     <string name="freeform_notice">Opened in a freeform window \u2014 use its own title bar to move, resize, minimize, or close it.</string>
+
+    <string name="root_freeform_enabled_notice">Root detected \u2014 freeform windows enabled system-wide. System UI is restarting briefly.</string>
 </resources>
