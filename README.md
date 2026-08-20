@@ -69,6 +69,75 @@ capability check (`FreeformCapability.isFreeformSupported`, wrapping
 | Prefer built-in/default Android features | ✅ | `TYPE_APPLICATION_OVERLAY`, a `specialUse` foreground service, the `<queries>` package-visibility declaration (not `QUERY_ALL_PACKAGES`), `ActivityOptions.setLaunchBounds`, `FEATURE_FREEFORM_WINDOW_MANAGEMENT`, and ordinary task-reorder `Intent` semantics — no reflection, no hidden APIs, no shell commands. |
 
 
+## Optional root tier (added for rooted builds, e.g. Magisk-rooted AxionOS)
+
+Everything above is the original zero-ADB, non-root design and still works
+exactly as documented on a stock, non-rooted device -- this section only
+applies when `su` is actually available.
+
+Google has, on some Android 16 builds, removed the Developer Options
+toggle that flips the two `Settings.Global` flags backing
+`FEATURE_FREEFORM_WINDOW_MANAGEMENT` (see the platform note in
+`FreeformCapability`). A rooted device doesn't need that toggle to exist:
+`RootFreeformBootstrap` runs once, ever, per install (tracked in its own
+`SharedPreferences`, independent of anything else in the app) from
+`OverlayService.onCreate()`:
+
+1. Checks for `su` via `RootShell.isRootAvailable()`. No-op, silently, if
+   it's not there -- every non-root code path is completely unaffected.
+2. If root is available: `settings put global enable_freeform_support 1`
+   and `settings put global force_resizable_activities 1`, then
+   `killall com.android.systemui` so the flags take effect immediately
+   (Android relaunches that persistent process on its own, same as if it
+   had crashed) instead of requiring a full reboot.
+3. Shows a one-time toast (`root_freeform_enabled_notice`) the moment this
+   actually happens, so the brief status-bar/quick-settings flicker isn't
+   a silent surprise.
+
+After this runs, `FreeformCapability.isFreeformSupported()` should report
+true on the *next* app launch attempt, and `AppLaunchController` starts
+taking Tier A (real freeform) instead of Tier B for every subsequent
+launch -- no further root involvement needed anywhere else in the app.
+
+`RootShell` is a minimal, one-shot `su` wrapper (see its kdoc) -- deliberately
+not a full library like libsu, since nothing else here needs a persistent
+interactive root shell.
+
+## Release signing
+
+`.github/workflows/release.yml` builds a properly-signed release APK and
+publishes it as a GitHub Release whenever you push a tag matching `v*`
+(`git tag v1.0 && git push --tags`), or via "Run workflow" in the Actions
+tab for a manual release.
+
+A dedicated release keystore was generated for this project (2048-bit RSA,
+alias `floatwm`, valid 10000 days) rather than using the debug keystore --
+debug keystores are regenerated fresh on every ephemeral GitHub Actions
+runner, so two debug-signed releases would never carry the same signature
+and Android would refuse to treat the second as an update to the first.
+
+One-time setup, in the repo's **Settings → Secrets and variables → Actions**,
+add these four repository secrets:
+
+| Secret name | Value |
+|---|---|
+| `FLOATWM_RELEASE_KEYSTORE_BASE64` | the `.keystore` file, base64-encoded (`base64 -w0 release.keystore`) |
+| `FLOATWM_RELEASE_KEYSTORE_PASSWORD` | keystore password |
+| `FLOATWM_RELEASE_KEY_ALIAS` | `floatwm` |
+| `FLOATWM_RELEASE_KEY_PASSWORD` | key password (same as keystore password for this key) |
+
+**Keep the `.keystore` file and its password out of the repo itself** --
+only the base64 secret above should ever leave your machine. Losing this
+keystore means every future release has to use a new one, and Android will
+treat it as a different app for update purposes; back it up somewhere safe
+outside git.
+
+`app/build.gradle.kts`'s release `signingConfig` only activates when the
+`FLOATWM_RELEASE_KEYSTORE_PATH` env var is set (which `release.yml` sets
+from the secret above) -- a plain local `gradle assembleRelease` with no
+env vars set produces an unsigned release APK, which is expected AGP
+behavior, not a misconfiguration.
+
 ## Project structure
 
 ```
