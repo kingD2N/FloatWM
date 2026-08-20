@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.floatwm.launcher.core.AppLaunchController
 import com.floatwm.launcher.core.AppSession
+import com.floatwm.launcher.core.RootFreeformBootstrap
 import com.floatwm.launcher.core.SessionState
 import com.floatwm.launcher.core.SessionTier
 import com.floatwm.launcher.ui.AppGridAdapter
@@ -83,6 +84,20 @@ class OverlayService : Service() {
             ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
         )
         showMainBubble()
+
+        // Root-only, one-time, no-op on non-rooted devices -- see kdoc on
+        // RootFreeformBootstrap. Runs after showMainBubble() so the bubble
+        // is already up even if this takes a moment or SystemUI briefly
+        // flickers from the restart it triggers the first time.
+        serviceScope.launch {
+            if (RootFreeformBootstrap.ensureFreeformEnabled(this@OverlayService)) {
+                Toast.makeText(
+                    this@OverlayService,
+                    getString(R.string.root_freeform_enabled_notice),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
